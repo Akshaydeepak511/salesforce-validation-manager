@@ -2,12 +2,27 @@ require('dotenv').config();
 
 const express = require('express');
 const cors = require('cors');
+const session = require('express-session');
 const jsforce = require('jsforce');
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin:
+    'https://salesforce-validation-manager-frontend-deh4f8yty.vercel.app',
+  credentials: true
+}));
+
 app.use(express.json());
+
+app.use(session({
+  secret: 'salesforce-secret',
+  resave: false,
+  saveUninitialized: true,
+  cookie: {
+    secure: false
+  }
+}));
 
 const PORT = 5000;
 
@@ -42,8 +57,8 @@ app.get('/auth/salesforce/callback', async (req, res) => {
 
     await conn.authorize(code);
 
-    global.accessToken = conn.accessToken;
-    global.instanceUrl = conn.instanceUrl;
+    req.session.accessToken = conn.accessToken;
+    req.session.instanceUrl = conn.instanceUrl;
 
     res.redirect(
       'https://salesforce-validation-manager-frontend-deh4f8yty.vercel.app'
@@ -51,7 +66,7 @@ app.get('/auth/salesforce/callback', async (req, res) => {
 
   } catch (error) {
 
-    console.log(error);
+    console.log(JSON.stringify(error, null, 2));
 
     res.status(500).send('Salesforce Authentication Failed');
   }
@@ -59,9 +74,18 @@ app.get('/auth/salesforce/callback', async (req, res) => {
 
 app.get('/user-info', async (req, res) => {
 
+  if (
+    !req.session.accessToken ||
+    !req.session.instanceUrl
+  ) {
+    return res.status(401).json({
+      message: 'User not authenticated'
+    });
+  }
+
   const conn = new jsforce.Connection({
-    instanceUrl: global.instanceUrl,
-    accessToken: global.accessToken
+    instanceUrl: req.session.instanceUrl,
+    accessToken: req.session.accessToken
   });
 
   try {
@@ -85,9 +109,18 @@ app.get('/user-info', async (req, res) => {
 
 app.get('/validation-rules', async (req, res) => {
 
+  if (
+    !req.session.accessToken ||
+    !req.session.instanceUrl
+  ) {
+    return res.status(401).json({
+      message: 'User not authenticated'
+    });
+  }
+
   const conn = new jsforce.Connection({
-    instanceUrl: global.instanceUrl,
-    accessToken: global.accessToken
+    instanceUrl: req.session.instanceUrl,
+    accessToken: req.session.accessToken
   });
 
   try {
@@ -111,9 +144,18 @@ app.get('/validation-rules', async (req, res) => {
 
 app.post('/toggle-validation-rule', async (req, res) => {
 
+  if (
+    !req.session.accessToken ||
+    !req.session.instanceUrl
+  ) {
+    return res.status(401).json({
+      message: 'User not authenticated'
+    });
+  }
+
   const conn = new jsforce.Connection({
-    instanceUrl: global.instanceUrl,
-    accessToken: global.accessToken
+    instanceUrl: req.session.instanceUrl,
+    accessToken: req.session.accessToken
   });
 
   const {
