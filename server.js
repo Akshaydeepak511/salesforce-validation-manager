@@ -23,7 +23,13 @@ app.get('/', (req, res) => {
 });
 
 app.get('/auth/salesforce', (req, res) => {
-  res.redirect(oauth2.getAuthorizationUrl());
+
+  res.redirect(
+    oauth2.getAuthorizationUrl({
+      prompt: 'login'
+    })
+  );
+
 });
 
 app.get('/auth/salesforce/callback', async (req, res) => {
