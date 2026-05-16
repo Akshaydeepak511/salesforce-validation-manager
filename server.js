@@ -38,12 +38,49 @@ app.get('/auth/salesforce/callback', async (req, res) => {
 
   const code = req.query.code;
 
-  await conn.authorize(code);
+  try {
 
-  global.accessToken = conn.accessToken;
-  global.instanceUrl = conn.instanceUrl;
+    await conn.authorize(code);
 
-  res.redirect('https://salesforce-validation-manager-frontend-deh4f8yty.vercel.app');
+    global.accessToken = conn.accessToken;
+    global.instanceUrl = conn.instanceUrl;
+
+    res.redirect(
+      'https://salesforce-validation-manager-frontend-deh4f8yty.vercel.app'
+    );
+
+  } catch (error) {
+
+    console.log(error);
+
+    res.status(500).send('Salesforce Authentication Failed');
+  }
+});
+
+app.get('/user-info', async (req, res) => {
+
+  const conn = new jsforce.Connection({
+    instanceUrl: global.instanceUrl,
+    accessToken: global.accessToken
+  });
+
+  try {
+
+    const userInfo = await conn.identity();
+
+    res.json({
+      username: userInfo.username,
+      display_name: userInfo.display_name
+    });
+
+  } catch (error) {
+
+    console.log(error);
+
+    res.status(500).json({
+      message: error.message
+    });
+  }
 });
 
 app.get('/validation-rules', async (req, res) => {
