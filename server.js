@@ -93,7 +93,7 @@ app.get('/validation-rules', async (req, res) => {
   try {
 
     const result = await conn.tooling.query(
-      "SELECT Id, ValidationName, Active FROM ValidationRule"
+      "SELECT Id, ValidationName, Active, EntityDefinition.QualifiedApiName FROM ValidationRule"
     );
 
     res.json(result.records);
@@ -109,29 +109,31 @@ app.get('/validation-rules', async (req, res) => {
   }
 });
 
-app.post('/toggle-validation-rule/:id', async (req, res) => {
+app.post('/toggle-validation-rule', async (req, res) => {
 
   const conn = new jsforce.Connection({
     instanceUrl: global.instanceUrl,
     accessToken: global.accessToken
   });
 
-  const ruleId = req.params.id;
-
-  const { active } = req.body;
+  const {
+    fullName,
+    active
+  } = req.body;
 
   try {
 
-    await conn.tooling.sobject('ValidationRule').update({
-      Id: ruleId,
-      Metadata: {
+    const result = await conn.metadata.update(
+      'ValidationRule',
+      {
+        fullName: fullName,
         active: active
       }
-    });
+    );
 
     res.json({
       success: true,
-      message: 'Validation Rule Updated'
+      result: result
     });
 
   } catch (error) {
