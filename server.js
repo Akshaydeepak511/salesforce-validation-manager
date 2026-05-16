@@ -123,12 +123,16 @@ app.post('/toggle-validation-rule', async (req, res) => {
 
   try {
 
+    const metadata = await conn.metadata.read(
+      'ValidationRule',
+      fullName
+    );
+
+    metadata.active = active;
+
     const result = await conn.metadata.update(
       'ValidationRule',
-      {
-        fullName: fullName,
-        active: active
-      }
+      metadata
     );
 
     res.json({
@@ -141,7 +145,8 @@ app.post('/toggle-validation-rule', async (req, res) => {
     console.log(error);
 
     res.status(500).json({
-      message: error.message
+      message: error.message,
+      error: error
     });
   }
 });
