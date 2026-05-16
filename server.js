@@ -37,7 +37,7 @@ app.get('/auth/salesforce/callback', async (req, res) => {
   global.accessToken = conn.accessToken;
   global.instanceUrl = conn.instanceUrl;
 
-  res.redirect('http://localhost:3000');
+  res.redirect('https://salesforce-validation-manager-frontend-deh4f8yty.vercel.app');
 });
 
 app.get('/validation-rules', async (req, res) => {
