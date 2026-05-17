@@ -51,7 +51,7 @@ app.get('/auth/salesforce/callback', async (req, res) => {
     };
 
     res.redirect(
-      'https://salesforce-validation-manager-frontend-deh4f8yty.vercel.app'
+      'https://salesforce-validation-manager-front.vercel.app'
     );
 
   } catch (error) {
